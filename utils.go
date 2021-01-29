@@ -11,6 +11,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"github.com/valyala/fastjson"
 	"io"
 	"log"
 	"net/url"
@@ -20,6 +21,8 @@ import (
 )
 
 const EventBodyTag = "EvBody"
+
+var jsonPool fastjson.ParserPool
 
 // Convert fseventStr into fseventMap
 func FSEventStrToMap(fsevstr string, headers []string) map[string]string {
@@ -206,6 +209,19 @@ func urlDecode(hdrVal string) string {
 		hdrVal = valUnescaped
 	}
 	return hdrVal
+}
+
+// Extracts a value out of a json string
+func jsonVal(message, key string) string {
+	parser := jsonPool.Get()
+	defer jsonPool.Put(parser)
+
+	v, err := parser.Parse(message)
+	if err != nil {
+		return ""
+	}
+
+	return string(v.GetStringBytes(key))
 }
 
 func getMapKeys(m map[string][]func(string, int)) (keys []string) {

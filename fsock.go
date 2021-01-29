@@ -442,14 +442,14 @@ func (f *FSock) filterEvents(filters map[string][]string) error {
 
 // Dispatch events to handlers in async mode
 func (f *FSock) dispatchEvent(event string) {
-	eventName := headerVal(event, "Event-Name")
+	eventName := jsonVal(event, "Event-Name")
 	if eventName == "BACKGROUND_JOB" { // for bgapi BACKGROUND_JOB
 		go f.doBackgroundJob(event)
 		return
 	}
 
 	if eventName == "CUSTOM" {
-		eventSubclass := headerVal(event, "Event-Subclass")
+		eventSubclass := jsonVal(event, "Event-Subclass")
 		if len(eventSubclass) != 0 {
 			eventName += " " + urlDecode(eventSubclass)
 		}
